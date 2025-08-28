@@ -1,0 +1,117 @@
+<!--
+	THIS EXAMPLE WAS DOWNLOADED FROM https://echarts.apache.org/examples/en/editor.html?c=bar-waterfall&theme=dark&code=MYewdgzgLgBAhgJwQRhgXhgbQEwA4AMANDACz4nEDMuAbMdgJwCs9yyxA7DRaQx8UwbsY1XMQbViJGixEcxpXAwC6AbgBQoSLACeAU0QR0WbPmQtTyOpf6WxlhoVOmn-bO2fZX2St5Jr1dQB6IJhgOAAbYABXCLh4AAc9MDgjADdEAEs4AHOAY5AYSyZAZAJnEk1waHgkABFMgDMG40wAhpAEGAAKCL1YTONsVRgBgB4MNmHMgGppgEoYAG8YEJqEHGUYAEuisyZ1GDX6poA6BOiIAAsuxBRMTM2AWjXke5hn5GU5jQBfQJAElBMuBjIsDjAgVBegAuJbgw5QPQADygsIA5AA1LK5AowAAm8WAl2iGRgegAtjAEHo4vlCnB6WBGYiEMDOl1ivBdtgSHM0YR4TAINEAEaIlHogBicAAXskCTAAMKIFIAL5F8RKMAAKnAkggQABDmBagAKACF-YLeg1UTA0cBkiy0eCfgKESAQBEgQlYWDDgjWQBzIN6BDouBIzIQK0BmDtBDkuBQFmwhrRMDAIEgroJRBwckQBb-uNhKq6AydDB5hAFiCYfDKE6R6NYiLRPQaUtl7T4xrNav5wsNpsEqBwLulrTVCCZINgYx4_swAB8MHwMAA_DAAETTHcwWE7neTuPUqDRBALgAGABJFvpED9RiKEEEV1jWTiQLD77P5z895Lk0PwwOS5LXqeMB_Icbrgr0oZgHifqClAAKwjQDBEIKY5wLCmCYtidLwGA0SRGiyiuu6MBBqyyFwnGNp2miuAAKSxgGwaXMxbEcYcIogCmIDkui5jsdRhxaOOmRgAAMnAIo0rCUAIB2VHgrhABanoiVggrLFAOhJOiEARJkeJhvyQrjggdpEGSSGwsg-AbnBcYGUZejojJs4WWi0Hgso1FIgAglGEAoXGhnGfa4SIkGHQ6Hx-LJnhMCPggEDqYcOhhdGkUBtFXn2hk7Z6MlKTksVhFfsRXTgXy2VCmGmR6BFenuYKhyVdVn7ZMRcCkeREmFZ56IaggyWHLhsK3McDQjYccSKREBXdlcIAAO7KapeiLQGCQgLO2ZgOiaEJFNAYJkmKZhrCuYLGga4JCcpUdqu65bjA17TPeL1vXoPzXoeMD_ZEandm5paZIi5IAMqGTCDHdmWEQdPdCSPc9r3g3oq4YBu25ogAxNg4RuMA_nosTeI0NgHB4C6kOCjBMCUT8qhAA
+	⚠ Please be aware that this chart is not an official demo of Apache ECharts but is made by user-generated code.
+-->
+<!DOCTYPE html>
+<html lang="en" style="height: 100%">
+<head>
+  <meta charset="utf-8">
+</head>
+<body style="height: 100%; margin: 0">
+  <div id="container" style="height: 100%"></div>
+
+  
+  <script type="text/javascript" src="https://fastly.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+  
+  <!-- Uncomment this line if you want to dataTool extension
+  <script type="text/javascript" src="https://fastly.jsdelivr.net/npm/echarts@5/dist/extension/dataTool.min.js"></script>
+  -->
+  <!-- Uncomment this line if you want to use gl extension
+  <script type="text/javascript" src="https://echarts.apache.org/en/js/vendors/echarts-gl/dist/echarts-gl.min.js"></script>
+  -->
+  <!-- Uncomment this line if you want to echarts-stat extension
+  <script type="text/javascript" src="https://echarts.apache.org/en/js/vendors/echarts-stat/dist/ecStat.min.js"></script>
+  -->
+  <!-- Uncomment this line if you want to echarts-graph-modularity extension
+  <script type="text/javascript" src="https://echarts.apache.org/en/js/vendors/echarts-graph-modularity/dist/echarts-graph-modularity.min.js"></script>
+  -->
+  <!-- Uncomment this line if you want to use map
+  <script type="text/javascript" src="https://fastly.jsdelivr.net/npm/echarts@4.9.0/map/js/world.js"></script>
+  -->
+  <!-- Uncomment these two lines if you want to use bmap extension
+  <script type="text/javascript" src="https://api.map.baidu.com/api?v=3.0&ak=YOUR_API_KEY"></script>
+  <script type="text/javascript" src="https://fastly.jsdelivr.net/npm/echarts@5/dist/extension/bmap.min.js"></script>
+  -->
+
+  <script type="text/javascript">
+    var dom = document.getElementById('container');
+    var myChart = echarts.init(dom, 'dark', {
+      renderer: 'canvas',
+      useDirtyRect: false
+    });
+    var app = {};
+    
+    var option;
+
+    const arr1 = [280, 404, 386, 295, 211, 764, 497, 591, 388, 938, 465, 378, 489];
+const years = [2015,2016,2017,2018,2019,2020,2021,2022,2023,2024];
+
+// calcula apenas variação 2015–2024
+const arrDiff = [];
+for (let i = 2; i <= 11; i++) { // arr[2] é 2015
+  arrDiff.push(arr1[i] - arr1[i - 1]);
+}
+
+option = {
+  title: {
+    text: 'Variação da chuva em relação ao ano anterior (2015 a 2024)',
+    subtext: 'Fazenda Carnaúba – Taperoá – PB',
+    left: 'center'
+  },
+  tooltip: {
+    trigger: 'axis',
+    formatter: function (params) {
+      const year = params[0].axisValue;
+      const diff = params[0].data;
+      const sign = diff > 0 ? "+" : "";
+      return `${year}<br/>Variação: ${sign}${diff} mm`;
+    }
+  },
+  legend: {
+    top: 690,
+    data: ['Variação anual']
+  },
+  grid: {
+    left: '8%',
+    right: '8%',
+    bottom: '15%',
+    containLabel: true
+  },
+  dataZoom: [
+    { type: 'slider', start: 0, end: 100 },
+    { type: 'inside' }
+  ],
+  xAxis: {
+    type: 'category',
+    data: years
+  },
+  yAxis: {
+    type: 'value',
+    name: 'Variação (mm)'
+  },
+  series: [
+    {
+      name: 'Variação anual',
+      type: 'bar',
+      data: arrDiff,
+      label: {
+        show: true,
+        position: 'top',
+        formatter: (p) => p.value > 0 ? `+${p.value}` : p.value
+      },
+      itemStyle: {
+        color: (p) => p.value >= 0 ? '#2ca02c' : '#d62728'
+      }
+    }
+  ]
+};
+
+
+    if (option && typeof option === 'object') {
+      myChart.setOption(option);
+    }
+
+    window.addEventListener('resize', myChart.resize);
+  </script>
+</body>
+</html>
