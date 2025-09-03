@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Mapa Mundi ECharts</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts/dist/echarts.min.js"></script>
+  </head>
+  <body style="background-color: #00031f; color: #ffffff">
+    <div style="margin-bottom: 100px; text-align: right">
+      <select id="chart-select">
+        <option value="bal">Balança</option>
+        <option value="exp">Exportações</option>
+        <option value="imp">Importações</option>
+      </select>
+    </div>
+    <div id="main" style="width: 100%; height: 600px"></div>
+    <div id="line" style="width: 100%; height: 400px"></div>
+    <div style="margin-bottom: 20px; text-align: center">
+      <input
+        id="year-slider"
+        type="range"
+        min="1997"
+        max="2025"
+        step="1"
+        value="2025"
+      />
+      <span id="year-label" style="margin-left: 10px">2025</span>
+    </div>
+
+    <script>
+      window.onload = function () {
+        var myChart = echarts.init(document.getElementById("main"));
+        var lineChart = echarts.init(document.getElementById("line"));
+
+        myChart.showLoading();
+
+        Promise.all([
+          fetch("./custom.geo.json").then((res) => res.json()),
+          fetch("./dataset.json").then((res) => res.json()),
+        ]).then(([customWorld, dataset]) => {
+          echarts.registerMap("world", customWorld);
+
+          const nameMapping = {
+            USA: "United States of America",
+            "United States": "United States of America",
+            UK: "United Kingdom",
+            Britain: "United Kingdom",
+            Russia: "Russian Federation",
+            "South Korea": "Korea, Republic of",
+            "North Korea": "Korea, Democratic People's Republic of",
+            Iran: "Iran, Islamic Republic of",
+            Syria: "Syrian Arab Republic",
+            Vietnam: "Viet Nam",
+            Laos: "Lao People's Democratic Republic",
+            "Ivory Coast": "Côte d'Ivoire",
+            Bolivia: "Bolivia, Plurinational State of",
+            Venezuela: "Venezuela, Bolivarian Republic of",
+            Tanzania: "Tanzania, United Republic of",
+            "Czech Republic": "Czechia",
+            "Republic of Congo": "Congo",
+            "Democratic Republic of Congo":
+              "Congo, the Democratic Republic of the",
+            Brunei: "Brunei Darussalam",
+            Swaziland: "Eswatini",
+            "Cape Verde": "Cabo Verde",
+            Palestine: "Palestine, State of",
+            Macedonia: "North Macedonia",
+            Burma: "Myanmar",
+            Moldova: "Moldova, Republic of",
+            Egypt: "Egypt, Arab Republic of",
+            Gambia: "Gambia, The",
+            Bahamas: "Bahamas, The",
+            Micronesia: "Micronesia, Federated States of",
+            "St. Kitts and Nevis": "Saint Kitts and Nevis",
+            "St. Lucia": "Saint Lucia",
+            "St. Vincent and the Grenadines":
+              "Saint Vincent and the Grenadines",
+            Trinidad: "Trinidad and Tobago",
+            Venezuela: "Venezuela",
+            Bolivia: "Bolivia",
+            "Democratic Republic Of The Congo": "Dem. Rep. Congo",
+            "Central African Republic": "Central African Rep.",
+            "South Sudan": "S. Sudan",
+            Tanzania: "Tanzania",
+            "Western Sahara": "W. Sahara",
+            Russia: "Russia",
+            Iran: "Iran",
+            Egypt: "Egypt",
+            Moldova: "Moldova",
+            "Bosnia And Herzegovina": "Bosnia and Herz.",
+            Laos: "Laos",
+            Vietnam: "Vietnam",
+            "North Korea": "North Korea",
+            "South Korea": "South Korea",
+            Gambia: "Gambia",
+            "Dominican Republic": "Dominican Rep.",
+          };
+
+          function normalizeName(name) {
+            return nameMapping[name] || name;
+          }
+
+          let year = "2025";
+
+          function updateChart(type) {
+            const chartData = dataset[type][year].map((item) => ({
+              name: normalizeName(item.name),
+              value: item.us_value / 1e9, // bilhões US$
+            }));
+
+            const values = chartData.map((d) => d.value);
+            const minValue = Math.min(...values);
+            const maxValue = Math.max(...values);
+
+            const titles = {
+              BAL: "Balança Comercial",
+              EXP: "Exportações",
+              IMP: "Importações",
+            };
+
+            const option = {
+              title: {
+                text: `${titles[type]} do Brasil (${year})`,
+                subtext: "Dados do Monitor do Comércio Exterior Brasileiro",
+                left: "center",
+                textStyle: { color: "#ffffff" },
+                subtextStyle: { color: "#cccccc" },
+              },
+              tooltip: {
+                trigger: "item",
+                formatter: (params) => {
+                  const millions = params.data?.value;
+                  if (millions === undefined)
+                    return `${params.name}: sem dados`;
+                  return `${params.name}: ${millions.toFixed(2)} bilhões US$`;
+                },
+                textStyle: { color: "#00031f" },
+              },
+              visualMap: {
+                left: "right",
+                min: minValue,
+                max: maxValue,
+                text: ["Maior", "Menor"],
+                inRange: { color: ["#caf0f8", "#00b4d8", "#390099"] },
+                calculable: true,
+              },
+              series: [
+                {
+                  type: "map",
+                  map: "world",
+                  data: chartData,
+                  emphasis: {
+                    itemStyle: {
+                      areaColor: "#ffa500", // cor de destaque do país
+                      borderColor: "#ffa500", // borda do país
+                      borderWidth: 2,
+                    },
+                    label: {
+                      show: true,
+                      color: "#ffffff", // cor do nome do país ao passar o mouse
+                    },
+                  },
+                },
+              ],
+            };
+
+            myChart.setOption(option);
+          }
+
+          function renderLineChart() {
+            const years = Object.keys(dataset.EXP).sort();
+            const expData = years.map(
+              (y) =>
+                dataset.EXP[y].reduce((sum, i) => sum + i.us_value, 0) / 1e9
+            );
+            const impData = years.map(
+              (y) =>
+                dataset.IMP[y].reduce((sum, i) => sum + i.us_value, 0) / 1e9
+            );
+            const balData = expData.map((val, i) => val - impData[i]);
+
+            const option = {
+              tooltip: { trigger: "axis" },
+              legend: {
+                top: 25,
+                textStyle: { color: "#ffffff" },
+                data: ["Exportações", "Importações", "Balança"],
+              },
+              xAxis: {
+                type: "category",
+                data: years,
+                axisLabel: { color: "#ffffff" },
+              },
+              yAxis: { type: "value", axisLabel: { color: "#ffffff" } },
+              series: [
+                { name: "Exportações", type: "line", data: expData },
+                { name: "Importações", type: "line", data: impData },
+                { name: "Balança", type: "line", data: balData },
+              ],
+            };
+
+            lineChart.setOption(option);
+          }
+
+          myChart.hideLoading();
+          lineChart.hideLoading();
+
+          // Inicializa com BAL
+          updateChart("BAL");
+          renderLineChart();
+
+          document
+            .getElementById("chart-select")
+            .addEventListener("change", function () {
+              const value = this.value;
+              if (value === "bal") {
+                updateChart("BAL");
+              } else if (value === "exp") {
+                updateChart("EXP");
+              } else if (value === "imp") {
+                updateChart("IMP");
+              }
+            });
+
+          const yearSlider = document.getElementById("year-slider");
+          const yearLabel = document.getElementById("year-label");
+
+          yearSlider.addEventListener("input", function () {
+            year = this.value;
+            yearLabel.textContent = year;
+
+            const value = document.getElementById("chart-select").value;
+            if (value === "bal") {
+              updateChart("BAL");
+            } else if (value === "exp") {
+              updateChart("EXP");
+            } else if (value === "imp") {
+              updateChart("IMP");
+            }
+          });
+        });
+      };
+    </script>
+  </body>
+</html>
